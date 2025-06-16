@@ -13,11 +13,14 @@ export default function Page(){
             const res = await fetch("http://127.0.0.1:8000/screen-cvs",{
                 method:"POST",
                 headers:{"Content-Type": "application/json"},
-                body:JSON.stringify({ job_prompt: prompt })
+                body: JSON.stringify({ job_prompt: prompt })
             })
             const data = await res.json()
+            
+            
             if (data.ranked_cvs) {
                 setResults(data.ranked_cvs);
+                
             } else {
                 setError("No results found");
                 setResults([]);

@@ -25,7 +25,7 @@ async def evaluate_cv(cv_content: str, job_prompt: str):
     agent = Agent(
          name="CV Screener",
         instructions="You're a hiring assistant. Based on the given job description, rate this CV from 1 to 100 and explain why.",
-        run_config=config
+        
     )
 
     full_prompt = f"""
@@ -40,5 +40,5 @@ async def evaluate_cv(cv_content: str, job_prompt: str):
     2. A short explanation of how well this CV fits the job
     """
 
-    result = await Runner.run(agent,full_prompt)
+    result = await Runner.run(agent,full_prompt,run_config=config)
     return result.final_output

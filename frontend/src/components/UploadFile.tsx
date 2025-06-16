@@ -18,7 +18,7 @@ export default function UploadFile(){
         })
 
         const data = await res.json();
-        alert(`CV Uploaded: ${data.id}`)
+        alert(`CV Uploaded: successfully`)
     }
 
     return(
