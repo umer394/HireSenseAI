@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 import { useState } from "react"
 
 export default function UploadFile(){
@@ -39,6 +40,7 @@ export default function UploadFile(){
       >
         Upload CV
       </button>
+      <Link href="/screencvs">Screen Cvs</Link>
     </div>
   );
 }

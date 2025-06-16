@@ -5,6 +5,10 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 from uuid import uuid4
+from fastapi import Body
+from screener import evaluate_cv
+
+
 load_dotenv()
 
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -24,16 +28,6 @@ db = client.hiresense
 cv_collection = db.cvs
 
 
-client = AsyncOpenAI(
-    api_key=gemini_api_key,
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-)
-
-config = RunConfig(
-    model="gemini-1.5-flash",
-    model_provider=client,
-    tracing_disabled=True,
-)
 
 @app.post("/upload-cv")
 async def upload_cv(file:UploadFile = File(...),job_title: str = Form(...)):
@@ -44,7 +38,33 @@ async def upload_cv(file:UploadFile = File(...),job_title: str = Form(...)):
         "id":doc_id,
         "filename":file.filename,
         "job_title":job_title,
-        "content" : content.decode("utf-8",errors="ignore")
+        "content" : content.decode("utf-8",errors="ignore"),
+        "score": "",
+        "ai_summary": ""
+
     })
 
     return {"status" : "uploaded successfull"}
+
+@app.post("/screen-cvs")
+async def screen(job_prompt: str = Body(...)):
+    cvs = list(cv_collection.find({}))
+    results = []
+
+    for cv in cvs:
+        try:
+            ai_response = await evaluate_cv(cv["content"], job_prompt)
+
+            # You can parse score if your AI response format is fixed
+            result = {
+                "id": cv["id"],
+                "filename": cv["filename"],
+                "job_title": cv["job_title"],
+                "score_and_reason": ai_response
+            }
+
+            results.append(result)
+        except Exception as e:
+            results.append({"id": cv["id"], "error": str(e)})
+    
+    return {"ranked_cvs": results}
